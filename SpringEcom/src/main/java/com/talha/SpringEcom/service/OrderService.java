@@ -1,5 +1,14 @@
 package com.talha.SpringEcom.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.talha.SpringEcom.model.Order;
 import com.talha.SpringEcom.model.OrderItem;
 import com.talha.SpringEcom.model.Product;
@@ -9,20 +18,13 @@ import com.talha.SpringEcom.model.dto.OrderRequest;
 import com.talha.SpringEcom.model.dto.OrderResponse;
 import com.talha.SpringEcom.repository.OrderRepo;
 import com.talha.SpringEcom.repository.ProductRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class OrderService {
 
     @Autowired
     private ProductRepo productRepo;
+    @Autowired
     private OrderRepo orderRepo;
 
     public OrderResponse placeOrder(OrderRequest request) {
@@ -81,7 +83,34 @@ public class OrderService {
 
     public List<OrderResponse> getAllOrderResponses() {
 
-        return null;
+        List<Order> orders = orderRepo.findAll();
+        List<OrderResponse> orderResponses = new ArrayList<>();
+
+        for(Order order : orders){
+
+            List<OrderItemResponse> itemResponses = new ArrayList<>();
+
+            for(OrderItem  item : order.getOrderItems()){
+                OrderItemResponse orderItemResponse = new OrderItemResponse(
+                    item.getProduct().getName(),
+                    item.getQuantity(),
+                    item.getTotalPrice()
+                );
+                itemResponses.add(orderItemResponse);
+            }
+
+            OrderResponse orderResponse = new OrderResponse(
+                order.getOrderId(),
+                order.getCustomerName(),
+                order.getEmail(),
+                order.getStatus(),
+                order.getOrderDate(),
+                itemResponses
+            );
+            orderResponses.add(orderResponse);
+        }
+
+        return orderResponses;
 
     }
 }
